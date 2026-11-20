@@ -1,0 +1,73 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+yolo_env/
+venv/
+env/
+ENV/
+.venv/
+env.bak/
+venv.bak/
+
+# Datasets and raw image archives (large binary directories)
+railmadad_photos/
+cleanliness_dataset_crops1/
+cleanliness_dataset_final/
+cleanliness_dataset_classwise/
+clean_crops/
+raw_images/
+extra_good_images/
+labelme_json3/
+yolo_dataset3/
+new/
+WAGON STENCIL PIPELINE/
+crop_images/
+crop_images2/
+rating_image_3/
+rating_image_1/
+bad_images/
+bad_images1/
+average_crop/
+average_txt/
+json_files/
+txt_files/
+cropped_objects/
+images/
+FINAL_FILTERED/
+
+# Model run outputs and temporary inference results
+results/
+results2/
+
+# Flask dynamic uploads and results (keep directory structure via .gitkeep)
+static/uploads/*
+!static/uploads/.gitkeep
+static/results_ui/*
+!static/results_ui/.gitkeep
+
+# Large inspection spreadsheets and CSV data dumps
+*.csv
+*.xlsx
+
+# Compressed archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Base Ultralytics weights (auto-downloaded by YOLO when training)
+# (Note: custom trained models in runs/segment/weights and runs/classify/weights are kept)
+yolov8*.pt
+**/weights/last.pt
+
+# OS / Editor generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp

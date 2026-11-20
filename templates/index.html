@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanitation AI - YOLO Vision & Cleanliness Intelligence System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        
+        <!-- HEADER / NAVIGATION -->
+        <header class="main-header">
+            <div class="logo-group">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-shield-virus"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Sanitation<span>AI</span></h1>
+                    <span class="sub-tag">YOLOv8 Detection & Cleanliness Classifier</span>
+                </div>
+            </div>
+            
+            <nav class="nav-tabs">
+                <button class="nav-btn active" data-tab="tab-inspect">
+                    <i class="fa-solid fa-expand"></i> Single Inspection
+                </button>
+                <button class="nav-btn" data-tab="tab-batch">
+                    <i class="fa-solid fa-layer-group"></i> Batch Test Suite
+                </button>
+                <button class="nav-btn" data-tab="tab-architecture">
+                    <i class="fa-solid fa-diagram-project"></i> System Specs
+                </button>
+            </nav>
+            
+            <div class="header-status">
+                <span class="status-indicator online"></span>
+                <span class="status-text">Models Ready</span>
+            </div>
+        </header>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main class="dashboard-content">
+            
+            <!-- TAB 1: SINGLE INSPECTION -->
+            <section id="tab-inspect" class="tab-pane active">
+                <div class="inspection-grid">
+                    
+                    <!-- CONTROL SIDEBAR -->
+                    <aside class="control-panel glass-card">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-sliders"></i> Detection Controls</h3>
+                        </div>
+                        
+                        <!-- DROPZONE UPLOAD -->
+                        <div class="form-group">
+                            <label class="input-label">Upload Custom Image</label>
+                            <div class="dropzone" id="image-dropzone">
+                                <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+                                <p class="drop-title">Drag & Drop Image Here</p>
+                                <span class="drop-sub">or click to browse local files</span>
+                                <input type="file" id="file-input" accept="image/*" class="file-hidden">
+                            </div>
+                        </div>
+
+                        <div class="divider"><span>OR</span></div>
+
+                        <!-- SAMPLE SELECTOR -->
+                        <div class="form-group">
+                            <label class="input-label" for="sample-select">Select Test Sample</label>
+                            <div class="select-wrapper">
+                                <select id="sample-select" class="custom-select">
+                                    <option value="">-- Choose from test_images folder --</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down select-icon"></i>
+                            </div>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <!-- SLIDERS -->
+                        <div class="form-group">
+                            <div class="slider-header">
+                                <label for="conf-slider">Detection Confidence</label>
+                                <span id="conf-val" class="slider-badge">0.40</span>
+                            </div>
+                            <input type="range" id="conf-slider" min="0.10" max="0.90" step="0.05" value="0.40" class="custom-range">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="slider-header">
+                                <label for="pad-slider">Crop Padding (px)</label>
+                                <span id="pad-val" class="slider-badge">10px</span>
+                            </div>
+                            <input type="range" id="pad-slider" min="0" max="30" step="2" value="10" class="custom-range">
+                        </div>
+
+                        <!-- ACTION BUTTON -->
+                        <button id="btn-run-inspect" class="primary-btn">
+                            <i class="fa-solid fa-bolt"></i> Run AI Inspection
+                        </button>
+                    </aside>
+
+                    <!-- INSPECTION DISPLAY AREA -->
+                    <div class="display-panel glass-card">
+                        
+                        <!-- EMPTY STATE -->
+                        <div id="inspect-empty" class="empty-state">
+                            <div class="empty-icon-wrap">
+                                <i class="fa-solid fa-magnifying-glass-chart"></i>
+                            </div>
+                            <h2>No Image Analyzed Yet</h2>
+                            <p>Upload an image or pick a test sample from the left panel to run YOLO segmentation and cleanliness classification.</p>
+                        </div>
+
+                        <!-- LOADING STATE -->
+                        <div id="inspect-loading" class="loading-state hidden">
+                            <div class="spinner"></div>
+                            <p>Running YOLO Detection & Cleanliness Classifier...</p>
+                        </div>
+
+                        <!-- RESULTS VIEW -->
+                        <div id="inspect-results" class="results-wrapper hidden">
+                            
+                            <!-- RESULTS HEADER SUMMARY -->
+                            <div class="results-header">
+                                <div class="file-meta">
+                                    <h3 id="res-filename">image.jpg</h3>
+                                    <span id="res-dims" class="meta-tag">1920x1080</span>
+                                </div>
+
+                                <div class="status-badge-wrap">
+                                    <span class="label">Overall Status</span>
+                                    <div id="res-overall-status" class="status-badge status-good">
+                                        <i class="fa-solid fa-circle-check"></i> <span>GOOD</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- IMAGE DISPLAY TABS -->
+                            <div class="image-viewer-box">
+                                <div class="view-toggle-bar">
+                                    <button class="toggle-btn active" data-view="annotated">
+                                        <i class="fa-solid fa-vector-square"></i> AI Detection Overlay
+                                    </button>
+                                    <button class="toggle-btn" data-view="original">
+                                        <i class="fa-solid fa-image"></i> Original Image
+                                    </button>
+                                </div>
+
+                                <div class="image-container">
+                                    <img id="img-annotated" src="" alt="AI Detection View" class="display-img">
+                                    <img id="img-original" src="" alt="Original View" class="display-img hidden">
+                                </div>
+                            </div>
+
+                            <!-- DETECTED OBJECTS BREAKDOWN -->
+                            <div class="objects-section">
+                                <div class="section-title">
+                                    <h4><i class="fa-solid fa-list-check"></i> Detected Objects Breakdown (<span id="res-obj-count">0</span>)</h4>
+                                    <div class="summary-counts">
+                                        <span class="count-tag count-good"><i class="fa-solid fa-check"></i> Good: <strong id="cnt-good">0</strong></span>
+                                        <span class="count-tag count-avg"><i class="fa-solid fa-minus"></i> Avg: <strong id="cnt-avg">0</strong></span>
+                                        <span class="count-tag count-bad"><i class="fa-solid fa-triangle-exclamation"></i> Bad: <strong id="cnt-bad">0</strong></span>
+                                    </div>
+                                </div>
+
+                                <!-- CROPS GRID -->
+                                <div id="crops-grid" class="crops-grid">
+                                    <!-- Dynamic Object Cards Inserted via JS -->
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: BATCH TEST SUITE -->
+            <section id="tab-batch" class="tab-pane hidden">
+                <div class="batch-container glass-card">
+                    
+                    <!-- BATCH HEADER & ACTIONS -->
+                    <div class="batch-header-bar">
+                        <div>
+                            <h2><i class="fa-solid fa-boxes-stacked"></i> Batch Test Dataset Execution</h2>
+                            <p>Execute automated cleanliness inspection across all test images in the dataset.</p>
+                        </div>
+                        <button id="btn-run-batch" class="primary-btn pulse-glow">
+                            <i class="fa-solid fa-play"></i> Execute Batch Test Suite
+                        </button>
+                    </div>
+
+                    <!-- BATCH PROGRESS -->
+                    <div id="batch-progress" class="batch-progress-box hidden">
+                        <div class="progress-bar-wrap">
+                            <div class="progress-bar-fill indeterminate"></div>
+                        </div>
+                        <p class="progress-text"><i class="fa-solid fa-gear fa-spin"></i> Processing test_images dataset with YOLO models...</p>
+                    </div>
+
+                    <!-- BATCH SUMMARY METRICS -->
+                    <div id="batch-summary-card" class="batch-summary-card hidden">
+                        <div class="stat-box">
+                            <span class="stat-val" id="bstat-total">0</span>
+                            <span class="stat-lbl">Total Images</span>
+                        </div>
+                        <div class="stat-box stat-good">
+                            <span class="stat-val" id="bstat-good">0</span>
+                            <span class="stat-lbl">Clean / Good</span>
+                        </div>
+                        <div class="stat-box stat-avg">
+                            <span class="stat-val" id="bstat-avg">0</span>
+                            <span class="stat-lbl">Average</span>
+                        </div>
+                        <div class="stat-box stat-bad">
+                            <span class="stat-val" id="bstat-bad">0</span>
+                            <span class="stat-lbl">Action Required (Bad)</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-val" id="bstat-objects">0</span>
+                            <span class="stat-lbl">Total Objects Segmented</span>
+                        </div>
+                    </div>
+
+                    <!-- BATCH FILTERS & GRID -->
+                    <div id="batch-results-wrap" class="batch-results-wrap hidden">
+                        <div class="filter-bar">
+                            <span class="filter-lbl">Filter Results:</span>
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn filter-good" data-filter="good">Good</button>
+                            <button class="filter-btn filter-average" data-filter="average">Average</button>
+                            <button class="filter-btn filter-bad" data-filter="bad">Bad</button>
+                        </div>
+
+                        <div id="batch-grid" class="batch-grid">
+                            <!-- Dynamic Batch Item Cards -->
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- TAB 3: SYSTEM ARCHITECTURE -->
+            <section id="tab-architecture" class="tab-pane hidden">
+                <div class="architecture-container glass-card">
+                    <h2><i class="fa-solid fa-cubes"></i> Dual-Model Sanitation AI Architecture</h2>
+                    <p class="arch-desc">This system uses a two-stage computer vision pipeline combining YOLOv8 Instance Segmentation for object extraction and YOLOv8 Fine-Grained Classification for cleanliness evaluation.</p>
+
+                    <div class="pipeline-flow">
+                        <div class="flow-step">
+                            <div class="step-num">1</div>
+                            <div class="step-card">
+                                <h3>Input Image / Video Frame</h3>
+                                <p>Captures sanitation area (railway carriage, washbasin, toilet compartment, aisle).</p>
+                            </div>
+                        </div>
+
+                        <div class="flow-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+
+                        <div class="flow-step">
+                            <div class="step-num">2</div>
+                            <div class="step-card">
+                                <h3>YOLOv8 Segmentation</h3>
+                                <p>Detects & segments 13 target sanitation categories (washbasin, commode, dustbin, aisle, tap, wall, etc.).</p>
+                            </div>
+                        </div>
+
+                        <div class="flow-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+
+                        <div class="flow-step">
+                            <div class="step-num">3</div>
+                            <div class="step-card">
+                                <h3>Bounding Crop & Resize</h3>
+                                <p>Extracts localized bounding box crops with custom padding and normalizes to 224x224.</p>
+                            </div>
+                        </div>
+
+                        <div class="flow-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+
+                        <div class="flow-step">
+                            <div class="step-num">4</div>
+                            <div class="step-card">
+                                <h3>YOLOv8 Classifier</h3>
+                                <p>Evaluates extracted crops into 3 cleanliness levels: <strong>Good</strong>, <strong>Average</strong>, or <strong>Bad</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="specs-grid">
+                        <div class="spec-card">
+                            <h4><i class="fa-solid fa-bullseye"></i> Detection Classes (13)</h4>
+                            <div class="tag-cloud">
+                                <span class="tag">commode_cover</span>
+                                <span class="tag">commode_seat</span>
+                                <span class="tag">commode_floor</span>
+                                <span class="tag">commode_wall</span>
+                                <span class="tag">washbasin</span>
+                                <span class="tag">washbasin_wall</span>
+                                <span class="tag">washbasin_floor</span>
+                                <span class="tag">washbasin_soap_holder</span>
+                                <span class="tag">washbasin_tap</span>
+                                <span class="tag">dustbin</span>
+                                <span class="tag">dustbin_wall</span>
+                                <span class="tag">dustbin_floor</span>
+                                <span class="tag">aisle</span>
+                            </div>
+                        </div>
+
+                        <div class="spec-card">
+                            <h4><i class="fa-solid fa-tags"></i> Cleanliness Rating Classes</h4>
+                            <div class="tag-cloud">
+                                <span class="tag tag-good">Good (Clean / Hygienic)</span>
+                                <span class="tag tag-avg">Average (Minor Dirt / Stain)</span>
+                                <span class="tag tag-bad">Bad (Needs Urgent Cleaning)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+path: C:/Users/Ayushi/Desktop/sanitation_yolo_project
+
+train: yolo_dataset3/images/train
+val: yolo_dataset3/images/val
+
+nc: 13
+names:
+  0: commode_cover 
+  1: commode_seat
+  2: commode_floor
+  3: commode_wall
+
+  4: washbasin
+  5: washbasin_wall
+  6: washbasin_floor
+  7: washbasin_soap_holder
+  8: washbasin_tap
+  
+  9: dustbin
+  10: dustbin_wall
+  11: dustbin_floor
+
+  12: aisle
+ 
+  
+
